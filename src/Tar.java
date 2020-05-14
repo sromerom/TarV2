@@ -35,8 +35,6 @@ class Tar {
         try {
             InputStream is = new FileInputStream(this.fileName);
             DataInputStream dis = new DataInputStream(is);
-            //this.allBytes = dis.readAllBytes();
-            System.out.println("Tamaño tar inicial Tar: " + this.size);
 
             while (true) {
                 String nameFile = new String(dis.readNBytes(100)).trim();

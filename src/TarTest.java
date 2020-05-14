@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TarTest {
     @Test
     public void test1() throws Exception {
-        Tar tar = new Tar("/tmp/archive2.tar");
+        Tar tar = new Tar("C:\\Users\\samue\\Downloads\\tar\\archive2.tar");
         tar.expand();
 
         assertArrayEquals(new String[]{

@@ -36,7 +36,14 @@ class Tar {
 
     // Torna un array de bytes amb el contingut del fitxer que té per nom
 // igual a l'String «name» que passem per paràmetre
-    public byte[] getBytes(String name) {
+    public byte[] getBytes(String name) throws IOException {
+        if (this.isExpanded) {
+            for (CustomFile cf : this.files) {
+                if (cf.getFileName().equals(name)) {
+                    return cf.getContent();
+                }
+            }
+        }
         return null;
     }
 
@@ -76,9 +83,11 @@ class Tar {
 
                 int sizeInDecimal = Integer.parseInt(sizeFile, 8);
                 int seguentFitxer = (int) (Math.ceil(sizeInDecimal / 512.0) * 512);
-                dis.skipBytes(seguentFitxer);
+                int addBytes = seguentFitxer - sizeInDecimal;
 
-                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), Long.parseLong(sizeFile), lastModification, Integer.parseInt(checksum), isLink, nameLinkedFile));
+                byte[] content = dis.readNBytes(sizeInDecimal);
+                dis.skipBytes(addBytes);
+                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), Long.parseLong(sizeFile), lastModification, Integer.parseInt(checksum), isLink, nameLinkedFile, content));
             }
 
             this.files = new CustomFile[filesList.size()];
@@ -101,9 +110,10 @@ class CustomFile {
     private int checksum;
     private boolean isLink;
     private String nameLinkedFile;
+    private byte[] content;
 
 
-    public CustomFile(String fileName, String fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile) {
+    public CustomFile(String fileName, String fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile, byte[] content) {
         this.fileName = fileName;
         this.fileMode = fileMode;
         this.ownerID = ownerID;
@@ -113,6 +123,7 @@ class CustomFile {
         this.checksum = checksum;
         this.isLink = isLink;
         this.nameLinkedFile = nameLinkedFile;
+        this.content = content;
     }
 
     public String getFileName() {
@@ -149,5 +160,9 @@ class CustomFile {
 
     public String getNameLinkedFile() {
         return nameLinkedFile;
+    }
+
+    public byte[] getContent() {
+        return content;
     }
 }

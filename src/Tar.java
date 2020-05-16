@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 class Tar {
+    private String pathName;
     private String fileName;
     private long size;
     private CustomFile[] files;
@@ -13,12 +14,15 @@ class Tar {
 
     // Constructor
     public Tar(String filename) {
-        this.fileName = filename;
+        File f = new File(filename);
 
-        File f = new File(this.fileName);
+        if (f.exists()) {
+            this.pathName = f.getPath();
+            this.fileName = f.getName();
+            this.size = (int) f.length();
+            this.isExpanded = false;
+        }
         this.exists = f.exists();
-        this.size = (int) f.length();
-        this.isExpanded = false;
     }
 
     // Torna un array amb la llista de fitxers que hi ha dins el TAR
@@ -51,7 +55,7 @@ class Tar {
     public void expand() {
         List<CustomFile> filesList = new ArrayList<>();
         try {
-            InputStream is = new FileInputStream(this.fileName);
+            InputStream is = new FileInputStream(this.pathName);
             DataInputStream dis = new DataInputStream(is);
 
             while (true) {
@@ -97,6 +101,26 @@ class Tar {
             e.printStackTrace();
         }
         this.isExpanded = true;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public long getSize() {
+        return size;
+    }
+
+    public CustomFile[] getFiles() {
+        return files;
+    }
+
+    public boolean isExpanded() {
+        return isExpanded;
+    }
+
+    public boolean isExists() {
+        return exists;
     }
 }
 

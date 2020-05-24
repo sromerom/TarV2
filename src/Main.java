@@ -1,8 +1,9 @@
 import java.io.File;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Scanner sc = new Scanner(System.in);
         System.out.print("Benvingut a TARV2. Introduiex un fitxer Tar per començar a treballar amb ell: ");
@@ -35,10 +36,12 @@ public class Main {
                 int comanda = sc.nextInt();
 
                 switch (comanda) {
+                    //Carregar fitxer a la memoria
                     case 1:
                         System.out.println("Carregant tar a la memoria...");
                         t.expand();
                         break;
+                    //Llistam tots els fitxers
                     case 2:
                         if (t.isExpanded()) {
                             String [] fitxers = t.list();
@@ -51,16 +54,23 @@ public class Main {
                             System.out.println("Abans de poder fer aquesta comanda, s'ha de carregar el fitxer tar a la memoria.");
                         }
                         break;
+                    //Extreure tots els fitxers
                     case 3:
                         if (t.isExpanded()) {
-                            System.out.println("Extreant fitxers...");
+                            Scanner sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex la ruta a on vols extreure els fitxers del Tar: (en blanc si vols extreure'ls en el directori a on estas): ");
+                            String path2 = sc2.nextLine();
+                            t.extractTar(path2);
+
                         } else {
                             System.out.println("Abans de poder fer aquesta comanda, s'ha de carregar el fitxer tar a la memoria.");
                         }
                         break;
+                    //Un help per explicar que fa cada comanda
                     case 4:
                         System.out.println("Mostrant ajuda...");
                         break;
+                    //Comanda per sortir del programa
                     case 5:
                         System.out.println("Sortint...");
                         status = false;

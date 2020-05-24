@@ -3,6 +3,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 class Tar {
     private String pathName;
@@ -101,6 +102,54 @@ class Tar {
             e.printStackTrace();
         }
         this.isExpanded = true;
+    }
+
+    public boolean extractTar(String path) throws IOException {
+        boolean isExtracted = false;
+        File f = new File(path);
+        File f2 = new File(".");
+        String tarName = this.getFileName().split("\\.")[0];
+        boolean createFolder = false;
+
+        if (path.equals("") && f2.exists() && f2.isDirectory() && f2.canWrite()) {
+            int i = 1;
+            while (new File(tarName).exists()) {
+                tarName = tarName + i;
+            }
+            createFolder = new File(tarName).mkdirs();
+        } else if (f.exists() && f.isDirectory() && f.canWrite()) {
+            int i = 1;
+            while (new File(f.getPath() + "\\" + tarName).exists()) {
+                tarName = tarName + i;
+            }
+            System.out.println(tarName);
+            createFolder = new File(f.getPath() + "\\" + tarName).mkdirs();
+        } else {
+            return false;
+        }
+
+        if (createFolder) {
+
+            System.out.println("S'ha creat la carpeta correctament...");
+            String[] fitxers = list();
+
+            for (String fitxer : fitxers) {
+                byte[] contentActualFile = getBytes(fitxer);
+                OutputStream os;
+                if (path.equals("")) {
+                    os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + tarName + "\\" + fitxer);
+                } else {
+                    os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
+                }
+
+                os.write(contentActualFile);
+                os.close();
+            }
+        } else {
+            System.out.println("No s'ha pogut crear la carpeta");
+            return false;
+        }
+        return true;
     }
 
     public String getFileName() {

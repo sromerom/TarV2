@@ -1,9 +1,7 @@
 import java.io.*;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Scanner;
+import java.sql.Timestamp;
+import java.util.*;
 
 class Tar {
     private String pathName;
@@ -46,6 +44,20 @@ class Tar {
             for (CustomFile cf : this.files) {
                 if (cf.getFileName().equals(name)) {
                     return cf.getContent();
+                }
+            }
+        }
+        return null;
+    }
+
+    public String getLastModification(String name) {
+        if (this.isExpanded) {
+            for (CustomFile cf : this.files) {
+                if (cf.getFileName().equals(name) || cf.getFileName().contains(name)) {
+                    long timestamp = Integer.parseInt(cf.getLastModification(), 8);
+                    Timestamp tt = new Timestamp(timestamp * 1000);
+                    Date date = new Date(tt.getTime());
+                    return date.toString();
                 }
             }
         }
@@ -97,11 +109,12 @@ class Tar {
 
             this.files = new CustomFile[filesList.size()];
             filesList.toArray(this.files);
-
+            this.isExpanded = true;
+            dis.close();
+            is.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.isExpanded = true;
     }
 
     public boolean extractTar(String path) throws IOException {
@@ -129,8 +142,6 @@ class Tar {
         }
 
         if (createFolder) {
-
-            System.out.println("S'ha creat la carpeta correctament...");
             String[] fitxers = list();
 
             for (String fitxer : fitxers) {
@@ -146,7 +157,6 @@ class Tar {
                 os.close();
             }
         } else {
-            System.out.println("No s'ha pogut crear la carpeta");
             return false;
         }
         return true;

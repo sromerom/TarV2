@@ -25,16 +25,19 @@ public class Main {
                 System.out.printf("%-15S\n", "3.-Extract");
 
                 System.out.printf("%11s", "");
-                System.out.printf("%-15S\n", "4.-Help");
+                System.out.printf("%-15S\n", "4.-Last Modification");
 
                 System.out.printf("%11s", "");
-                System.out.printf("%-15S\n", "5.-Exit");
+                System.out.printf("%-15S\n", "45.-Help");
+
+                System.out.printf("%11s", "");
+                System.out.printf("%-15S\n", "46.-Exit");
 
                 System.out.println("##############################");
                 System.out.println();
                 System.out.print("Introduiex el numero que correspongui a la comanda que vols realitzar: ");
                 int comanda = sc.nextInt();
-
+                Scanner sc2;
                 switch (comanda) {
                     //Carregar fitxer a la memoria
                     case 1:
@@ -57,21 +60,37 @@ public class Main {
                     //Extreure tots els fitxers
                     case 3:
                         if (t.isExpanded()) {
-                            Scanner sc2 = new Scanner(System.in);
+                            sc2 = new Scanner(System.in);
                             System.out.print("Introduiex la ruta a on vols extreure els fitxers del Tar: (en blanc si vols extreure'ls en el directori a on estas): ");
                             String path2 = sc2.nextLine();
-                            t.extractTar(path2);
+                            boolean aaa = t.extractTar(path2);
+                            if (aaa) {
+                                System.out.println("S'ha extret correctament");
+                            } else {
+                                System.out.println("No s'ha pogut extreure correctament");
+                            }
 
                         } else {
                             System.out.println("Abans de poder fer aquesta comanda, s'ha de carregar el fitxer tar a la memoria.");
                         }
                         break;
-                    //Un help per explicar que fa cada comanda
                     case 4:
+                        if (t.isExpanded()) {
+                            sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex el nom del fitxer que vols comprovar l'ultima data de modificació: ");
+                            String name = sc2.nextLine();
+                            String lastModification = t.getLastModification(name);
+                            System.out.println(lastModification);
+                        } else {
+                            System.out.println("No s'ha pogut trobar el fitxer");
+                        }
+                        break;
+                    //Un help per explicar que fa cada comanda
+                    case 45:
                         System.out.println("Mostrant ajuda...");
                         break;
                     //Comanda per sortir del programa
-                    case 5:
+                    case 46:
                         System.out.println("Sortint...");
                         status = false;
                         break;

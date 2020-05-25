@@ -99,6 +99,16 @@ class Tar {
         return 0;
     }
 
+    public String getLink(String name) {
+        for (CustomFile cf : this.files) {
+            if (cf.getFileName().equals(name)) {
+                return new String(cf.isLink() + " " + cf.getNameLinkedFile());
+            }
+        }
+
+        return "";
+    }
+
     // Expandeix el fitxer TAR dins la memòria
     public void expand() {
         List<CustomFile> filesList = new ArrayList<>();
@@ -220,7 +230,7 @@ class Tar {
 
 class CustomFile {
     private String fileName; //X
-    private int fileMode;
+    private int fileMode; //X
     private int ownerID; //X
     private int groupID; //X
     private long fileSize; //X

@@ -40,6 +40,9 @@ public class Main {
                 System.out.printf("%-15S\n", "8.-Permissions");
 
                 System.out.printf("%11s", "");
+                System.out.printf("%-15S\n", "9.-Link File");
+
+                System.out.printf("%11s", "");
                 System.out.printf("%-15S\n", "45.-Help");
 
                 System.out.printf("%11s", "");
@@ -143,6 +146,19 @@ public class Main {
                             int permisos = t.getPermissions(name);
 
                             System.out.println("Els permisos del fitxer són els següents: " + permisos);
+                        } else {
+                            System.out.println("No s'ha pogut trobar el fitxer");
+                        }
+                        break;
+                    case 9:
+                        if (t.isExpanded()) {
+                            sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex el nom del fitxer per comprovar si es un fitxer amb link simbolic: ");
+                            String name = sc2.nextLine();
+
+                            String link = t.getLink(name);
+                            System.out.println(link);
+
                         } else {
                             System.out.println("No s'ha pogut trobar el fitxer");
                         }

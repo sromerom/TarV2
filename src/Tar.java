@@ -90,6 +90,15 @@ class Tar {
         return ids;
     }
 
+    public int getPermissions(String name) {
+        for (CustomFile cf : this.files) {
+            if (cf.getFileName().equals(name)) {
+                return cf.getFileMode();
+            }
+        }
+        return 0;
+    }
+
     // Expandeix el fitxer TAR dins la memòria
     public void expand() {
         List<CustomFile> filesList = new ArrayList<>();
@@ -102,7 +111,7 @@ class Tar {
                 if (nameFile.equals("")) {
                     break;
                 }
-                String fileMode = new String(dis.readNBytes(8)).trim();
+                int fileMode = Integer.parseInt(new String(dis.readNBytes(8)).trim());
                 //long fileModeBienHecho = dis.readLong();
 
                 String ownerNumberUser = new String(dis.readNBytes(8)).trim();
@@ -211,7 +220,7 @@ class Tar {
 
 class CustomFile {
     private String fileName; //X
-    private String fileMode;
+    private int fileMode;
     private int ownerID; //X
     private int groupID; //X
     private long fileSize; //X
@@ -222,7 +231,7 @@ class CustomFile {
     private byte[] content; //X
 
 
-    public CustomFile(String fileName, String fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile, byte[] content) {
+    public CustomFile(String fileName, int fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile, byte[] content) {
         this.fileName = fileName;
         this.fileMode = fileMode;
         this.ownerID = ownerID;
@@ -239,7 +248,7 @@ class CustomFile {
         return fileName;
     }
 
-    public String getFileMode() {
+    public int getFileMode() {
         return fileMode;
     }
 

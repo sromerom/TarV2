@@ -34,6 +34,9 @@ public class Main {
                 System.out.printf("%-15S\n", "6.-Size");
 
                 System.out.printf("%11s", "");
+                System.out.printf("%-15S\n", "7.-UID & GID");
+
+                System.out.printf("%11s", "");
                 System.out.printf("%-15S\n", "45.-Help");
 
                 System.out.printf("%11s", "");
@@ -112,6 +115,19 @@ public class Main {
 
                             long size = t.getSize(name);
                             System.out.printf("El tamany del fitxer es de %d Bytes\n", size);
+                        } else {
+                            System.out.println("No s'ha pogut trobar el fitxer");
+                        }
+                        break;
+                    case 7:
+                        if (t.isExpanded()) {
+                            sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex nom del fitxer per mostrar el ID del seu propietari: ");
+                            String name = sc2.nextLine();
+
+                            int[] ids = t.getIds(name);
+                            System.out.println("Owner ID: " + ids[0]);
+                            System.out.println("Group ID:" + ids[1]);
                         } else {
                             System.out.println("No s'ha pogut trobar el fitxer");
                         }

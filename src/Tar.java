@@ -65,18 +65,29 @@ class Tar {
     }
 
     public boolean checkChecksum(String file1, String file2) {
-        for (CustomFile cf: this.files) {
+        for (CustomFile cf : this.files) {
         }
         return true;
     }
 
     public long getSize(String name) {
-        for (CustomFile cf: this.files) {
+        for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
                 return cf.getFileSize();
             }
         }
         return 0;
+    }
+
+    public int[] getIds(String name) {
+        int[] ids = new int[2];
+        for (CustomFile cf : this.files) {
+            if (cf.getFileName().equals(name)) {
+                ids[0] = cf.getOwnerID();
+                ids[1] = cf.getGroupID();
+            }
+        }
+        return ids;
     }
 
     // Expandeix el fitxer TAR dins la memòria
@@ -199,16 +210,16 @@ class Tar {
 }
 
 class CustomFile {
-    private String fileName;
+    private String fileName; //X
     private String fileMode;
-    private int ownerID;
-    private int groupID;
-    private long fileSize;
-    private String lastModification;
+    private int ownerID; //X
+    private int groupID; //X
+    private long fileSize; //X
+    private String lastModification; //X
     private int checksum;
     private boolean isLink;
     private String nameLinkedFile;
-    private byte[] content;
+    private byte[] content; //X
 
 
     public CustomFile(String fileName, String fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile, byte[] content) {

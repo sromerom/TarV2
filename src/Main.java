@@ -28,6 +28,12 @@ public class Main {
                 System.out.printf("%-15S\n", "4.-Last Modification");
 
                 System.out.printf("%11s", "");
+                System.out.printf("%-15S\n", "5.-Checksum");
+
+                System.out.printf("%11s", "");
+                System.out.printf("%-15S\n", "6.-Size");
+
+                System.out.printf("%11s", "");
                 System.out.printf("%-15S\n", "45.-Help");
 
                 System.out.printf("%11s", "");
@@ -47,7 +53,7 @@ public class Main {
                     //Llistam tots els fitxers
                     case 2:
                         if (t.isExpanded()) {
-                            String [] fitxers = t.list();
+                            String[] fitxers = t.list();
 
                             for (int i = 0; i < fitxers.length; i++) {
                                 System.out.printf("%10s", "");
@@ -81,6 +87,31 @@ public class Main {
                             String name = sc2.nextLine();
                             String lastModification = t.getLastModification(name);
                             System.out.println(lastModification);
+                        } else {
+                            System.out.println("No s'ha pogut trobar el fitxer");
+                        }
+                        break;
+                    case 5:
+                        if (t.isExpanded()) {
+                            sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex el nom del primer fitxer: ");
+                            String file1 = sc2.nextLine();
+                            System.out.print("Introduiex el nom del segon fitxer: ");
+                            String file2 = sc2.nextLine();
+
+
+                        } else {
+                            System.out.println("No s'ha pogut trobar el fitxer");
+                        }
+                        break;
+                    case 6:
+                        if (t.isExpanded()) {
+                            sc2 = new Scanner(System.in);
+                            System.out.print("Introduiex el nom del fitxer per mostrar el seu tamany: ");
+                            String name = sc2.nextLine();
+
+                            long size = t.getSize(name);
+                            System.out.printf("El tamany del fitxer es de %d Bytes\n", size);
                         } else {
                             System.out.println("No s'ha pogut trobar el fitxer");
                         }

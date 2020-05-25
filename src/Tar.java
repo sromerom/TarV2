@@ -64,6 +64,21 @@ class Tar {
         return null;
     }
 
+    public boolean checkChecksum(String file1, String file2) {
+        for (CustomFile cf: this.files) {
+        }
+        return true;
+    }
+
+    public long getSize(String name) {
+        for (CustomFile cf: this.files) {
+            if (cf.getFileName().equals(name)) {
+                return cf.getFileSize();
+            }
+        }
+        return 0;
+    }
+
     // Expandeix el fitxer TAR dins la memòria
     public void expand() {
         List<CustomFile> filesList = new ArrayList<>();
@@ -104,7 +119,7 @@ class Tar {
 
                 byte[] content = dis.readNBytes(sizeInDecimal);
                 dis.skipBytes(addBytes);
-                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), Long.parseLong(sizeFile), lastModification, Integer.parseInt(checksum), isLink, nameLinkedFile, content));
+                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), sizeInDecimal, lastModification, Integer.parseInt(checksum), isLink, nameLinkedFile, content));
             }
 
             this.files = new CustomFile[filesList.size()];

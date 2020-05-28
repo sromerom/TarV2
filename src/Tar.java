@@ -38,8 +38,8 @@ class Tar {
     }
 
     // Torna un array de bytes amb el contingut del fitxer que té per nom
-// igual a l'String «name» que passem per paràmetre
-    public byte[] getBytes(String name) throws IOException {
+    // igual a l'String «name» que passem per paràmetre
+    public byte[] getBytes(String name) {
         if (this.isExpanded) {
             for (CustomFile cf : this.files) {
                 if (cf.getFileName().equals(name)) {
@@ -50,6 +50,7 @@ class Tar {
         return null;
     }
 
+    //Torna un string amb la ultima data de modificio del fitxer de dins de tar. Com a parametre s'ha d'enviar el nom del fitxer.
     public String getLastModification(String name) {
         if (this.isExpanded) {
             for (CustomFile cf : this.files) {
@@ -64,21 +65,17 @@ class Tar {
         return null;
     }
 
-    public boolean checkChecksum(String file1, String file2) {
-        for (CustomFile cf : this.files) {
-        }
-        return true;
-    }
-
+    //Retorna un long amb el tamany de un fitxer del tar en concret. Com a paramentre s'ha de passar el nom del fitxer
     public long getSize(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
                 return cf.getFileSize();
             }
         }
-        return 0;
+        return -1;
     }
 
+    //Retorna un array de int indicant quins son els ids de propietari i de grup d'un fitxer en concret. Com els altres, s'ha de passar per parametre un nom.
     public int[] getIds(String name) {
         int[] ids = new int[2];
         for (CustomFile cf : this.files) {
@@ -90,80 +87,41 @@ class Tar {
         return ids;
     }
 
+    //Aquest metode ens permet aconseguir quins son els permisos d'un fitxer en concret. S'ha de passar un nom
     public int getPermissions(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
                 return cf.getFileMode();
             }
         }
-        return 0;
+        return -1;
     }
 
-    public String getLink(String name) {
+    //Aquest metode ens proporciona si un fitxer en concret del tar es un link simbolic o no. Retornara 0 si es un fitxer normal, 1 si es un hard link i el 2 si es un enllaç simbolic.
+    public int getLink(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
-                return new String(cf.isLink() + " " + cf.getNameLinkedFile());
+                return cf.link();
+            }
+        }
+        return -1;
+    }
+
+
+    //Metode que ens permet obtenir el name del arxiu a on hi apunta aquest link
+    public String getNameLinkedFile(String name) {
+        for (CustomFile cf : this.files) {
+            if (cf.getFileName().equals(name)) {
+                return cf.getNameLinkedFile();
             }
         }
 
-        return "";
+        return null;
     }
 
-    // Expandeix el fitxer TAR dins la memòria
-    public void expand() {
-        List<CustomFile> filesList = new ArrayList<>();
-        try {
-            InputStream is = new FileInputStream(this.pathName);
-            DataInputStream dis = new DataInputStream(is);
-
-            while (true) {
-                String nameFile = new String(dis.readNBytes(100)).trim();
-                if (nameFile.equals("")) {
-                    break;
-                }
-                int fileMode = Integer.parseInt(new String(dis.readNBytes(8)).trim());
-                //long fileModeBienHecho = dis.readLong();
-
-                String ownerNumberUser = new String(dis.readNBytes(8)).trim();
-                //long ownerNumberUserBienHecho = dis.readLong();
-
-                String groupNumberUser = new String(dis.readNBytes(8)).trim();
-                String sizeFile = new String(dis.readNBytes(12)).trim();
-                String lastModification = new String(dis.readNBytes(12)).trim();
-                String checksum = new String(dis.readNBytes(8)).trim();
-
-                boolean isLink;
-                if (new String(dis.readNBytes(1)).trim().equals(1)) {
-                    isLink = true;
-                } else {
-                    isLink = false;
-                }
-
-                //String linkIndicator = new String(dis.readNBytes(1)).trim();
-                String nameLinkedFile = new String(dis.readNBytes(100)).trim();
-                dis.skipBytes(255);
-
-                int sizeInDecimal = Integer.parseInt(sizeFile, 8);
-                int seguentFitxer = (int) (Math.ceil(sizeInDecimal / 512.0) * 512);
-                int addBytes = seguentFitxer - sizeInDecimal;
-
-                byte[] content = dis.readNBytes(sizeInDecimal);
-                dis.skipBytes(addBytes);
-                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), sizeInDecimal, lastModification, Integer.parseInt(checksum), isLink, nameLinkedFile, content));
-            }
-
-            this.files = new CustomFile[filesList.size()];
-            filesList.toArray(this.files);
-            this.isExpanded = true;
-            dis.close();
-            is.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public boolean extractTar(String path) throws IOException {
-        boolean isExtracted = false;
+    //Metode que ens permet extreure tots els fitxers que hi ha de dins d'un fitxer tar. S'ha de passar per parametre el path a on es vol extreure el path.
+    //Aquest metode retornar un boolean indicant si el process d'extració ha sortir correctament (true) o per si al contrari no s'ha pogut fer o ha ocurregut qualsevol error(false)
+    public boolean extractTar(String path) {
         File f = new File(path);
         File f2 = new File(".");
         String tarName = this.getFileName().split("\\.")[0];
@@ -191,20 +149,79 @@ class Tar {
 
             for (String fitxer : fitxers) {
                 byte[] contentActualFile = getBytes(fitxer);
-                OutputStream os;
-                if (path.equals("")) {
-                    os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + tarName + "\\" + fitxer);
-                } else {
-                    os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
-                }
 
-                os.write(contentActualFile);
-                os.close();
+                try {
+                    OutputStream os;
+                    if (path.equals("")) {
+                        os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + tarName + "\\" + fitxer);
+                    } else {
+                        os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
+                    }
+                    os.write(contentActualFile);
+                    os.close();
+                } catch (FileNotFoundException e) {
+                    System.out.println("No s'ha trobat el fitxer.");
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    System.out.println("Ha ocorregut un error amb el fitxer.");
+                    e.printStackTrace();
+                } catch (Exception ex) {
+                    System.out.println("Ha ocorregut un error desconegut");
+                }
             }
         } else {
             return false;
         }
         return true;
+    }
+
+
+    // Expandeix el fitxer TAR dins la memòria
+    public void expand() {
+        List<CustomFile> filesList = new ArrayList<>();
+        try {
+            InputStream is = new FileInputStream(this.pathName);
+            DataInputStream dis = new DataInputStream(is);
+
+            while (true) {
+                String nameFile = new String(dis.readNBytes(100)).trim();
+                if (nameFile.equals("")) {
+                    break;
+                }
+                int fileMode = Integer.parseInt(new String(dis.readNBytes(8)).trim());
+                String ownerNumberUser = new String(dis.readNBytes(8)).trim();
+                String groupNumberUser = new String(dis.readNBytes(8)).trim();
+                String sizeFile = new String(dis.readNBytes(12)).trim();
+                String lastModification = new String(dis.readNBytes(12)).trim();
+                String checksum = new String(dis.readNBytes(8)).trim();
+                String link = new String(dis.readNBytes(1)).trim();
+                String nameLinkedFile = new String(dis.readNBytes(100)).trim();
+
+                dis.skipBytes(255);
+
+                int sizeInDecimal = Integer.parseInt(sizeFile, 8);
+                int seguentFitxer = (int) (Math.ceil(sizeInDecimal / 512.0) * 512);
+                int addBytes = seguentFitxer - sizeInDecimal;
+
+                byte[] content = dis.readNBytes(sizeInDecimal);
+                dis.skipBytes(addBytes);
+                filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), sizeInDecimal, lastModification, Integer.parseInt(checksum), Integer.parseInt(link), nameLinkedFile, content));
+            }
+
+            this.files = new CustomFile[filesList.size()];
+            filesList.toArray(this.files);
+            this.isExpanded = true;
+            dis.close();
+            is.close();
+        } catch (FileNotFoundException e) {
+            System.out.println("No s'ha pogut trobar el tar indicat.");
+            e.printStackTrace();
+        } catch (IOException e) {
+            System.out.println("Ha ocorregut un error amb el tar.");
+            e.printStackTrace();
+        } catch (Exception ex) {
+            System.out.println("Ha ocorregut un error desconegut");
+        }
     }
 
     public String getFileName() {
@@ -236,12 +253,12 @@ class CustomFile {
     private long fileSize; //X
     private String lastModification; //X
     private int checksum;
-    private boolean isLink;
-    private String nameLinkedFile;
+    private int link; //X
+    private String nameLinkedFile;//X
     private byte[] content; //X
 
 
-    public CustomFile(String fileName, int fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, boolean isLink, String nameLinkedFile, byte[] content) {
+    public CustomFile(String fileName, int fileMode, int ownerID, int groupID, long fileSize, String lastModification, int checksum, int link, String nameLinkedFile, byte[] content) {
         this.fileName = fileName;
         this.fileMode = fileMode;
         this.ownerID = ownerID;
@@ -249,7 +266,7 @@ class CustomFile {
         this.fileSize = fileSize;
         this.lastModification = lastModification;
         this.checksum = checksum;
-        this.isLink = isLink;
+        this.link = link;
         this.nameLinkedFile = nameLinkedFile;
         this.content = content;
     }
@@ -282,8 +299,8 @@ class CustomFile {
         return checksum;
     }
 
-    public boolean isLink() {
-        return isLink;
+    public int link() {
+        return link;
     }
 
     public String getNameLinkedFile() {

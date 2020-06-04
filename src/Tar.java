@@ -69,7 +69,7 @@ class Tar {
         return null;
     }
 
-    //Retorna un long amb el tamany d'un fitxer del tar en concret. Com a paramentre s'ha de passar el nom del fitxer
+    //Retorna un long amb el tamany d'un fitxer del tar en concret. Com a parametre s'ha de passar el nom del fitxer
     public long getSize(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
@@ -79,7 +79,7 @@ class Tar {
         return -1;
     }
 
-    //Retorna un array de int indicant quins son els ids de propietari i de grup d'un fitxer en concret. Com els altres, s'ha de passar per parametre un nom.
+    //Retorna un array de int de dues posicions en la que ens dona quin es el ID propietari i el ID de grup respectivament, d'un fitxer en concret. Com els altres metodes, s'ha de passar per parametre un nom.
     public int[] getIds(String name) {
         int[] ids = new int[2];
         ids[0] = -1;
@@ -93,7 +93,8 @@ class Tar {
         return ids;
     }
 
-    //Aquest metode ens permet aconseguir quins son els permisos d'un fitxer en concret. S'ha de passar un nom
+    //Aquest metode ens permet aconseguir quins son els permisos d'un fitxer en concret. S'ha de passar un nom.
+    //Cal dir que ho ens retornara en format numeric (755) i no amb lletres (rwx) o altres.
     public int getPermissions(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
@@ -114,7 +115,7 @@ class Tar {
     }
 
 
-    //Metode que ens permet obtenir el nom del arxiu a on hi apunta un arxiu amb link
+    //Metode que ens permet obtenir el nom del arxiu a on hi apunta un arxiu amb link simbolic o hard. S'ha de passar el nom del fitxer al que volem comprovar.
     public String getNameLinkedFile(String name) {
         for (CustomFile cf : this.files) {
             if (cf.getFileName().equals(name)) {
@@ -126,71 +127,89 @@ class Tar {
     }
 
 
-    public void checksum() {
-        for (CustomFile cf : this.files) {
-            System.out.println(cf.getChecksum());
-        }
-    }
-
-    //Metode que ens permet extreure tots els fitxers que hi ha de dins d'un fitxer tar. S'ha de passar per parametre el path a on es vol extreure el path.
+    //Metode que ens permet extreure tots els fitxers que hi ha de dins d'un fitxer tar. S'ha de passar per parametre el path a on es vol extreure.
     //Aquest metode retorna un boolean indicant si el process d'extració ha sortit correctament (true) o per si al contrari no s'ha pogut fer o ha ocurregut qualsevol error(false)
-    public boolean extractTar(String path) {
+    public boolean extractTar(String path, boolean makeFolder) {
+
+        //Cream un objecte File de més, per poder aconseguir quina es la ruta relativa d'execució en cas de que l'usuari volgui descomprimir en el mateix lloc a on s'executa el programa
         File f = new File(path);
         File f2 = new File(".");
+
         String tarName = this.getFileName().split("\\.")[0];
         boolean createFolder = false;
 
-        //Si el path que ha introduit el usuari equival es buit, voldra dir que
-        if (path.equals("") && f2.exists() && f2.isDirectory() && f2.canWrite()) {
-            int i = 1;
-            while (new File(tarName).exists()) {
-                tarName = tarName + i;
+        //Si l'usuari vol crear una carpeta a on guardar el contingut del TAR haura de pasr per aquesta condicio, si no es obviara
+        if (makeFolder) {
+
+            //Si el path que ha introduit l'usuari es buit, voldra dir que vol descomprimir les dades en el directori a on s'executa el programa i crearem la corresponent carpeta en aquest path
+            if (path.equals("") && f2.exists() && f2.isDirectory() && f2.canWrite()) {
+                int i = 1;
+                while (new File(tarName).exists()) {
+                    tarName = tarName + i;
+                }
+                createFolder = new File(tarName).mkdirs();
+                //En canvi si ingressa un path haurem de crear la carpeta en el path que ha especificat l'usuari
+            } else if (f.exists() && f.isDirectory() && f.canWrite()) {
+                int i = 1;
+                while (new File(f.getPath() + "\\" + tarName).exists()) {
+                    tarName = tarName + i;
+                }
+                createFolder = new File(f.getPath() + "\\" + tarName).mkdirs();
+                //S'hi no es cap de les anteriors, retornarem false indicant que no s'ha extret correctament ja que no es pot crear la carpeta
+            } else {
+                return false;
             }
-            createFolder = new File(tarName).mkdirs();
-        } else if (f.exists() && f.isDirectory() && f.canWrite()) {
-            int i = 1;
-            while (new File(f.getPath() + "\\" + tarName).exists()) {
-                tarName = tarName + i;
-            }
-            System.out.println(tarName);
-            createFolder = new File(f.getPath() + "\\" + tarName).mkdirs();
-        } else {
+        }
+
+        //Si es dona el cas que l'usuari vol crear una carpeta pero el boolea que ens permet saber si s'ha creat correctament la carpeta es troba en false, doncs haurem de retornar false.
+        //Si no es crea la carpeta correctament evitarem seguir amb la part de descomprimir.
+        if (!createFolder && makeFolder) {
             return false;
         }
 
-        if (createFolder) {
-            String[] fitxers = list();
+        String[] fitxers = list();
 
-            for (String fitxer : fitxers) {
-                byte[] contentActualFile = getBytes(fitxer);
+        for (String fitxer : fitxers) {
+            byte[] contentActualFile = getBytes(fitxer);
 
-                try {
-                    OutputStream os;
-                    if (path.equals("")) {
+            try {
+                OutputStream os;
+
+                //Depen que hagui introduit l'usuari, treballarem amb el path sencer o amb el absoluteFile. Tambe canviara si l'usuari vol crear la carpeta o no, s'ha de canviar la ruta.
+                if (path.equals("")) {
+                    if (makeFolder) {
                         os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + tarName + "\\" + fitxer);
                     } else {
-                        os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
+                        os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + fitxer);
                     }
-                    os.write(contentActualFile);
-                    os.close();
-                } catch (FileNotFoundException e) {
-                    System.out.println("No s'ha trobat el fitxer.");
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    System.out.println("Ha ocorregut un error amb el fitxer.");
-                    e.printStackTrace();
-                } catch (Exception ex) {
-                    System.out.println("Ha ocorregut un error desconegut");
+                } else {
+                    if (makeFolder) {
+                        os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
+                    } else {
+                        os = new FileOutputStream(f.getPath() + "\\" + fitxer);
+                    }
                 }
+                os.write(contentActualFile);
+                os.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("No s'ha trobat el fitxer.");
+                e.printStackTrace();
+                return false;
+            } catch (IOException e) {
+                System.out.println("Ha ocorregut un error amb el fitxer.");
+                e.printStackTrace();
+                return false;
+            } catch (Exception ex) {
+                System.out.println("Ha ocorregut un error desconegut");
+                ex.printStackTrace();
+                return false;
             }
-        } else {
-            return false;
         }
         return true;
     }
 
 
-    // Expandeix el fitxer TAR dins la memòria
+    //Expandeix el fitxer TAR dins la memòria
     public void expand() {
         List<CustomFile> filesList = new ArrayList<>();
         try {
@@ -206,6 +225,7 @@ class Tar {
                     break;
                 }
 
+                //Anem conseguint totes les dades que ens dona el corresponent header i al mateix temps anem passant de bytes gràcies a readNBytes.
                 int fileMode = Integer.parseInt(new String(dis.readNBytes(8)).trim());
                 String ownerNumberUser = new String(dis.readNBytes(8)).trim();
                 String groupNumberUser = new String(dis.readNBytes(8)).trim();
@@ -218,23 +238,26 @@ class Tar {
                 //Avançam 255 per acabar el header i passar al content del fitxer
                 dis.skipBytes(255);
 
-                //Aconseguim el numero que ens permetra passar al següent header i obviar el bytes sobrants del content. Això passa per que els blocs van de 512 en 512
+                //Important passar el tamany que ens dona el header de octal a decimal.
                 int sizeInDecimal = Integer.parseInt(sizeFile, 8);
+
+                //Aconseguim el numero que ens permetra passar al següent header i obviar el bytes sobrants del content. Això passa per que els blocs van de 512 en 512 bytes.
                 int seguentFitxer = (int) (Math.ceil(sizeInDecimal / 512.0) * 512);
                 int addBytes = seguentFitxer - sizeInDecimal;
 
                 byte[] content = dis.readNBytes(sizeInDecimal);
 
-                //Passam el bytes que no volem i cream i guardam un objecte de tipus
+                //Feim un skip dels bytes que no volem i cream un objecte de tipus CustomFile amb les dades que hem aconseguit previament.
+                //Com que aquest proces es farà tantes vegades com fitxers hi hagui, haurem de guardar-los en una llista.
                 dis.skipBytes(addBytes);
                 filesList.add(new CustomFile(nameFile, fileMode, Integer.parseInt(ownerNumberUser), Integer.parseInt(groupNumberUser), sizeInDecimal, lastModification, Integer.parseInt(checksum), Integer.parseInt(link), nameLinkedFile, content));
             }
 
-            //Inicialitzam el array a on contindra tots els fitxers del tar i passam la llista a un array
+            //Inicialitzam el array a on contindra tots els fitxers del tar i passam la llista amb tots els el CustomFiles a un array.
             this.files = new CustomFile[filesList.size()];
             filesList.toArray(this.files);
 
-            //Important posar l'atribut isExpanded a true, indicant que s'ha carregat a la memoria el fitxer tar.
+            //Important posar l'atribut isExpanded a true, indicant que s'ha carregat a la memoria el fitxer TAR.
             this.isExpanded = true;
 
             //I no oblidar-se de tancar el fluxe de dades tant del dataInputStream com del InputStream

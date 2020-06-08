@@ -47,15 +47,14 @@ public class Main {
                     System.out.println("##############################");
                     System.out.println();
                     System.out.print("Introduiex el numero que correspongui a la comanda que vols realitzar: ");
-                    int comanda = sc.nextInt();
-
-                    if (comanda < 1 || comanda > 9) {
+                    String comanda = sc.nextLine();
+                    if (comanda.length() < 1 ||comanda.length() > 2 || Integer.parseInt(comanda) < 1 || Integer.parseInt(comanda) > 9) {
                         System.out.println("Introduiex un numero valid, per favor...");
                     } else {
+                        int comandaInt = Integer.parseInt(comanda);
                         Scanner sc2;
 
-
-                        switch (comanda) {
+                        switch (comandaInt) {
                             //Carregar fitxer a la memoria
                             case 1:
                                 generaEspais();

@@ -135,7 +135,9 @@ class Tar {
         File f = new File(path);
         File f2 = new File(".");
 
-        String tarName = this.getFileName().split("\\.")[0];
+        //Feim un split per tal d'aconseguir el nom del tar sense l'extensio. Això ho feim per crear la carpeta nomes amb el nom
+        String folderName = this.getFileName().split("\\.")[0];
+        int tarNameLength = folderName.length();
         boolean createFolder = false;
 
         //Si l'usuari vol crear una carpeta a on guardar el contingut del TAR haura de pasr per aquesta condicio, si no es obviara
@@ -143,18 +145,17 @@ class Tar {
 
             //Si el path que ha introduit l'usuari es buit, voldra dir que vol descomprimir les dades en el directori a on s'executa el programa i crearem la corresponent carpeta en aquest path
             if (path.equals("") && f2.exists() && f2.isDirectory() && f2.canWrite()) {
-                int i = 1;
-                while (new File(tarName).exists()) {
-                    tarName = tarName + i;
-                }
-                createFolder = new File(tarName).mkdirs();
+                folderName = checkIfFolderExists("", folderName, tarNameLength);
+                createFolder = new File(folderName).mkdirs();
                 //En canvi si ingressa un path haurem de crear la carpeta en el path que ha especificat l'usuari
-            } else if (f.exists() && f.isDirectory() && f.canWrite()) {
-                int i = 1;
-                while (new File(f.getPath() + "\\" + tarName).exists()) {
-                    tarName = tarName + i;
-                }
-                createFolder = new File(f.getPath() + "\\" + tarName).mkdirs();
+            } else if (!path.equals("") && f.exists() && f.isDirectory() && f.canWrite()) {
+
+                //El metode checIfFolderExists ens permet aconseguir quin sera el nom amb el que haurem de crear la carpeta. Si ha moltes carpetes iguals,
+                // aquest metode s'encarrega de crear un carpeta amb un nom totalment diferent
+                folderName = checkIfFolderExists(f.getPath(), folderName, tarNameLength);
+
+                //I cream la carpeta amb el name corresponent
+                createFolder = new File(f.getPath() + "\\" + folderName).mkdirs();
                 //S'hi no es cap de les anteriors, retornarem false indicant que no s'ha extret correctament ja que no es pot crear la carpeta
             } else {
                 return false;
@@ -178,13 +179,13 @@ class Tar {
                 //Depen que hagui introduit l'usuari, treballarem amb el path sencer o amb el absoluteFile. Tambe canviara si l'usuari vol crear la carpeta o no, s'ha de canviar la ruta.
                 if (path.equals("")) {
                     if (makeFolder) {
-                        os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + tarName + "\\" + fitxer);
+                        os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + folderName + "\\" + fitxer);
                     } else {
                         os = new FileOutputStream(f2.getAbsoluteFile() + "\\" + fitxer);
                     }
                 } else {
                     if (makeFolder) {
-                        os = new FileOutputStream(f.getPath() + "\\" + tarName + "\\" + fitxer);
+                        os = new FileOutputStream(f.getPath() + "\\" + folderName + "\\" + fitxer);
                     } else {
                         os = new FileOutputStream(f.getPath() + "\\" + fitxer);
                     }
@@ -272,6 +273,27 @@ class Tar {
         } catch (Exception ex) {
             System.out.println("Ha ocorregut un error desconegut");
         }
+    }
+
+    private String checkIfFolderExists(String path, String tarName, int tarNameLength) {
+        int i = 1;
+
+        if (!path.equals("")) {
+            path = path + "\\";
+        }
+
+        while (new File(path + tarName).exists()) {
+            if (i > 1) {
+                StringBuilder s = new StringBuilder();
+                for (int j = 0; j < tarNameLength; j++) {
+                    s.append(tarName.charAt(j));
+                }
+                tarName = s.toString();
+            }
+            tarName = tarName + "(" + i + ")";
+            i++;
+        }
+        return tarName;
     }
 
     public String getFileName() {

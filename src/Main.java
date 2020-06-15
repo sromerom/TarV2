@@ -48,7 +48,14 @@ public class Main {
                     System.out.println();
                     System.out.print("Introduiex el numero que correspongui a la comanda que vols realitzar: ");
                     String comanda = sc.nextLine();
-                    if (comanda.length() < 1 ||comanda.length() > 2 || Integer.parseInt(comanda) < 1 || Integer.parseInt(comanda) > 9) {
+
+                    boolean isNumeric = true;
+                    try {
+                        double checkComanda = Double.parseDouble(comanda);
+                    } catch (NumberFormatException e) {
+                        isNumeric = false;
+                    }
+                    if (!isNumeric || comanda.length() < 1 || comanda.length() > 2 || Integer.parseInt(comanda) < 1 || Integer.parseInt(comanda) > 9) {
                         System.out.println("Introduiex un numero valid, per favor...");
                     } else {
                         int comandaInt = Integer.parseInt(comanda);
@@ -82,8 +89,8 @@ public class Main {
                                     System.out.print("Introduiex la ruta a on vols extreure els fitxers del Tar: (en blanc si vols extreure'ls en el directori a on estas): ");
                                     String path2 = sc2.nextLine();
 
-                                    System.out.println("Ho vols extreure en una carpeta? (Y o N)");
-                                    String opcioElegida = sc2.next();
+                                    System.out.print("Ho vols extreure en una carpeta? (Y o N): ");
+                                    String opcioElegida = sc2.nextLine();
                                     generaEspais();
 
                                     //Aquest boolean ens permetra saber si l'usuari vol crear una carpeta per quan es descomprimeixi el contigut del TAR o per si al contrari o vol al mateix directori directament.
@@ -156,7 +163,7 @@ public class Main {
                             case 6:
                                 if (t.isExpanded()) {
                                     sc2 = new Scanner(System.in);
-                                    System.out.print("Introduiex nom del fitxer per mostrar el ID del seu propietari: ");
+                                    System.out.print("Introduiex nom del fitxer per mostrar el ID del seu propietari i grup: ");
                                     String name = sc2.nextLine();
                                     generaEspais();
 

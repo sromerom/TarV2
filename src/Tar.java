@@ -135,6 +135,9 @@ class Tar {
         File f = new File(path);
         File f2 = new File(".");
 
+        if (!f.exists() || !f2.exists()) {
+            return false;
+        }
         //Feim un split per tal d'aconseguir el nom del tar sense l'extensio. Això ho feim per crear la carpeta nomes amb el nom
         String folderName = this.getFileName().split("\\.")[0];
         int tarNameLength = folderName.length();
@@ -142,21 +145,22 @@ class Tar {
 
         //Si l'usuari vol crear una carpeta a on guardar el contingut del TAR haura de pasr per aquesta condicio, si no es obviara
         if (makeFolder) {
-
             //Si el path que ha introduit l'usuari es buit, voldra dir que vol descomprimir les dades en el directori a on s'executa el programa i crearem la corresponent carpeta en aquest path
-            if (path.equals("") && f2.exists() && f2.isDirectory() && f2.canWrite()) {
-                folderName = checkIfFolderExists("", folderName, tarNameLength);
-                createFolder = new File(folderName).mkdirs();
-                //En canvi si ingressa un path haurem de crear la carpeta en el path que ha especificat l'usuari
-            } else if (!path.equals("") && f.exists() && f.isDirectory() && f.canWrite()) {
+            if (path.equals("") && f2.isDirectory() && f2.canWrite()) {
 
                 //El metode checIfFolderExists ens permet aconseguir quin sera el nom amb el que haurem de crear la carpeta. Si ha moltes carpetes iguals,
                 // aquest metode s'encarrega de crear un carpeta amb un nom totalment diferent
+                folderName = checkIfFolderExists("", folderName, tarNameLength);
+                createFolder = new File(folderName).mkdirs();
+
+                //En canvi si ingressa un path haurem de crear la carpeta en el path que ha especificat l'usuari
+            } else if (!path.equals("") && f.isDirectory() && f.canWrite()) {
+
                 folderName = checkIfFolderExists(f.getPath(), folderName, tarNameLength);
 
                 //I cream la carpeta amb el name corresponent
                 createFolder = new File(f.getPath() + "\\" + folderName).mkdirs();
-                //S'hi no es cap de les anteriors, retornarem false indicant que no s'ha extret correctament ja que no es pot crear la carpeta
+                //S'hi no es cap de les anteriors i l'usuari ha seleccionat crear una carpeta, doncs retornarem false indicant que el proces de creacio de la carpeta no ha anat be.
             } else {
                 return false;
             }
